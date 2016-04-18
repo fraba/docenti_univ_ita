@@ -207,4 +207,34 @@ dbWriteTable(con, value = join_cineca_wd_mysql_table,
 
 save(join_cineca_wd_mysql_table, file = 'join_cineca_wd_mysql_table.RData')
 
+
+# TABLE: faculty_wt_coordinates
+require(data.table)
+docente_ruolo_mysql_table <- data.table(docente_ruolo_mysql_table)
+setkey(docente_ruolo_mysql_table, "ateneo_id")
+ateneo_mysql_table <- data.table(ateneo_mysql_table)
+names(ateneo_mysql_table)[1] <- "ateneo_id"
+setkey(ateneo_mysql_table, "ateneo_id")
+faculty_wt_coordinates <-
+  merge(docente_ruolo_mysql_table[,.(ateneo_id, facolta)], 
+        ateneo_mysql_table[,.(ateneo_id, wikidata_label, lon, lat)])
+faculty_wt_coordinates <- faculty_wt_coordinates[facolta!="",]
+setkeyv(faculty_wt_coordinates, c("facolta","ateneo_id"))
+faculty_wt_coordinates <- unique(faculty_wt_coordinates)
+
+dbWriteTable(con, value = faculty_wt_coordinates, 
+             name = "faculty_wt_coordinates", append = TRUE, row.names=0)
+
+# TABLE: department_wt_coordinates
+require(data.table)
+department_wt_coordinates <-
+  merge(docente_ruolo_mysql_table[,.(ateneo_id, dipartimento)], 
+        ateneo_mysql_table[,.(ateneo_id, wikidata_label, lon, lat)])
+department_wt_coordinates <- department_wt_coordinates[dipartimento!="Dip. Non disponibile",]
+setkeyv(department_wt_coordinates, c("dipartimento","ateneo_id"))
+department_wt_coordinates <- unique(department_wt_coordinates)
+
+dbWriteTable(con, value = department_wt_coordinates, 
+             name = "department_wt_coordinates", append = TRUE, row.names=0)
+
 dbDisconnect(con)

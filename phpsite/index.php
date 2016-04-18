@@ -53,11 +53,13 @@ if ($_GET['unit_level'] != 'region') {
 
 echo "</div>";
 
-echo "<div id = 'unit-prob-plot'>
-        <h3>Unit probability plot</h3>
-  </div>
+echo "<div id = 'unit-prob-plot'>";
+echo '<iframe width="240px" height="100px" src="http://146.118.107.12:3838/sim_dist/">';
+echo "<p>Loading...</p>";
+echo "</iframe>";
+echo "  </div>";
 
-  <div id = 'unit-on-map'>";
+echo "<div id = 'unit-on-map'>";
 
 echo <<<EOT
       <script defer="defer" type="text/javascript">
