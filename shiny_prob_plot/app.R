@@ -55,9 +55,27 @@ server <- shinyServer(function(input, output) {
   
 })
 
-source("/Users/francesco/ownCloud/docenti_univ_ita/fun/plotSimProbDistr.R")
-source("/Users/francesco/ownCloud/docenti_univ_ita/fun/runSimulation.R")
-load("/Users/francesco/ownCloud/docenti_univ_ita/sim/simulation_df.RData")
+source('/Users/francesco/ownCloud/docenti_univ_ita/00_connect_to_db.R') # not in repo
+## require(RMySQL)
+# pw <- {
+#   "yourpassword"
+# }
+# 
+# con <- dbConnect(RMySQL::MySQL(), 
+#                  host = "999.999.999.99",
+#                  port = 3306,
+#                  dbname = "db_name", 
+#                  username = "user", 
+#                  password = pw)
+# rm(pw)
+
+
+simulation_long_df <- dbReadTable(con, "simulation_long_df")
+
+dbDisconnect(con)
+
+source("https://raw.githubusercontent.com/fraba/docenti_univ_ita/master/fun/plotSimProbDistr.R")
+source("https://raw.githubusercontent.com/fraba/docenti_univ_ita/master/fun/runSimulation.R")
 
 # Run the application 
 shinyApp(ui = ui, server = server)

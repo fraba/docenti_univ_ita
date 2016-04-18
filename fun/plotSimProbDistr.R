@@ -29,8 +29,8 @@ plotSimProbDistr <- function(sim, n_in_unitpop, surname, qRight = .8)  {
     theme(axis.text.y = element_blank(), axis.ticks.y = element_blank(),
           panel.background = element_blank(),
           panel.grid.major = element_line(colour = "gainsboro")) +
-    labs(y = 'probabilità', 
-         x = paste0("docenti con cognome '", surname,"'")) +
+    labs(y = 'probability', 
+         x = paste0("staff with surname '", surname,"'")) +
     scale_y_continuous(breaks = NULL) +
     scale_x_continuous(breaks = seq(0, max(c(sim$result, n_in_unitpop)), by = 1))
   
