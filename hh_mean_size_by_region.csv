@@ -1,0 +1,21 @@
+regione_nome,regione_id,hh_mean_size
+    Piemonte,wd:Q1216,2.22
+    Valle d'Aosta,wd:Q1222,2.12
+    Liguria,wd:Q1256,2.06
+    Lombardia,wd:Q1210,2.32
+    Trentino Alto Adige,wd:Q1237,2.38
+    Veneto,wd:Q1243,2.42
+    Friuli-Venezia Giulia,wd:Q1250,2.21
+    Emilia-Romagna,wd:Q1263,2.25
+    Toscana,wd:Q1273,2.33
+    Umbria,wd:Q1280,2.39
+    Marche,wd:Q1279,2.46
+    Lazio,wd:Q1282,2.33
+    Abruzzo,wd:Q1284,2.49
+    Molise,wd:Q1443,2.44
+    Campania,wd:Q1438,2.79
+    Puglia,wd:Q1447,2.64
+    Basilicata,wd:Q1452,2.5
+    Calabria,wd:Q1458,2.53
+    Sicilia,wd:Q1460,2.54
+    Sardegna,wd:Q1462,2.41
