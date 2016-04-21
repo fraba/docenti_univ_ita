@@ -19,19 +19,18 @@
 }
 
 #unit-query-results {
-    height: 440px;
+    height: 640px;
 }
 
 #unit-summary-stats, #surname-details {
     width: 240px;
-    height: 200px;
+    height: 100px;
     background: #E0EDD3;
 }
 
 #unit-prob-plot {
     width: 240px;
-    height: 300px;
-    background: blue;
+    height: 250px;
 }
 
 #unit-on-map {
@@ -42,3 +41,9 @@
 #footer {
     clear: both;
 }
+
+.well {
+    font-size: 80%;
+    padding: 2px;
+}
+

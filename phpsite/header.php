@@ -2,15 +2,13 @@
 <html>
 
 <head>
-<title>Surname distributions in Italian universities</title>
+<title>Surname distribution in Italian universities</title>
 <link rel="stylesheet" type="text/css" href="styles/style.css">
 <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.11/css/jquery.dataTables.min.css">
 
 <script src="http://openlayers.org/api/OpenLayers.js"></script>
 
-<script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
-
-  <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+<link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
   <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
 
@@ -19,8 +17,24 @@
 </script>
 <script>
 $(document).ready(function() {
-    $('#example').DataTable( {
-        "order": [[ 3, "asc" ]]
+var table = $('#example').DataTable( {
+"language": {
+        "emptyTable":     "No two people share the same surname at this level."
+    },
+"order": [[ 4, "asc" ]],
+"columnDefs": [
+            {
+                "targets": [ 0 ],
+                "visible": false,
+                "searchable": false
+            }
+            ]
+});
+    $('#example tbody').on('click', 'tr', function () {
+        var data  = table.row( this ).data();
+        var table_row_id = data[0];
+        var frame = document.getElementById('shiny-iframe');
+        frame.contentWindow.postMessage(table_row_id, '*');
     } );
 } );
 </script>
@@ -60,3 +74,5 @@ $(document).ready(function(){
 <?session_start();?>
 <?php include 'init_db.php';?>
 <?php include 'functions.php';?>
+
+

@@ -91,6 +91,7 @@ function returnUnitQueryResults($db, $unit, $year = "2016") {
   echo '<table id="example" class="display" cellspacing="0" width="90%" style = "font-size: 80%">';
 
   echo "<thead></tr>";
+  echo "<th>sim_id</th>";
   echo "<th>Surname</th>";
   echo '<th><a href="#" data-toggle="tooltip" title="Number of people employed in the region, university, faculty or department with this surname and as percentage of total number of employees.">Staff with this surname</a></th>';
 
@@ -103,6 +104,7 @@ function returnUnitQueryResults($db, $unit, $year = "2016") {
   echo "<tbody>";
   foreach($result as $row) {
     echo "<tr>";
+    echo "<td>", $row['sim_id'], "</td>";
     echo "<td>", $row['surname'], "</td>";
     echo "<td>", $row['docenti_wt_surname']," (",
       round($row['docenti_wt_surname'] / $row['unitpop'] * 100, 4),

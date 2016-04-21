@@ -2,6 +2,11 @@
 
 include_once 'header.php';
 
+if (!isset($_GET["unit"])) {
+   header("Location: http://146.118.107.12/univapp/frontpage.php");
+   die();
+}
+
 if ($_GET['unit_level'] == 'region' OR $_GET['unit_level'] == 'ateneo') {
   $lat = getlat($db, $_GET["unit"]);
   $lon = getlon($db, $_GET["unit"]);
@@ -54,7 +59,9 @@ if ($_GET['unit_level'] != 'region') {
 echo "</div>";
 
 echo "<div id = 'unit-prob-plot'>";
-echo '<iframe width="240px" height="100px" src="http://146.118.107.12:3838/sim_dist/">';
+echo '<iframe id = "shiny-iframe" width="240px" height="250px" src="http://146.118.107.12:3838/sim_dist/" frameBorder="0">';
+
+
 echo "<p>Loading...</p>";
 echo "</iframe>";
 echo "  </div>";

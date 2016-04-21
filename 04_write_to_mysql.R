@@ -2,16 +2,16 @@
 
 setwd("~/ownCloud/docenti_univ_ita")
 source('00_connect_to_db.R') # not in repo
-## require(RMySQL)
+# # require(RMySQL)
 # pw <- {
 #   "yourpassword"
 # }
 # 
-# con <- dbConnect(RMySQL::MySQL(), 
+# con <- dbConnect(RMySQL::MySQL(),
 #                  host = "999.999.999.99",
 #                  port = 3306,
-#                  dbname = "db_name", 
-#                  username = "user", 
+#                  dbname = "db_name",
+#                  username = "user",
 #                  password = pw)
 # rm(pw)
 

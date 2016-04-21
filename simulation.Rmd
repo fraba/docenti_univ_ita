@@ -1,0 +1,16 @@
+---
+title: "How many people with the same surname should we expect in any subpopulation?"
+author: Francesco Bailo
+date: April 20, 2016
+output: html_document
+---
+
+What we want to obtain is an answer to the following question:
+
+> Given a subpopulation $X$ of $n$ individuals randomly selected from a population of $N$ individuals, what's the probability of observing in $X$ 2 or more individuals sharing any given surname?
+
+To answer this question we need to know the size $n$ of the subpopulation (to which I refer to as `unitpop`), the size $N$ of the entire population (`largepop`), the number of people with a given surname in the subpopulation (`n_in_univ`) and in  the entire population of interest (`n_in_largepop`). 
+
+
+
+

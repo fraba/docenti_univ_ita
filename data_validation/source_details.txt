@@ -1,0 +1,22 @@
+# Details and sources
+
+## surnames_bergamo.csv
+link: <https://www.dati.lombardia.it/Statistica/Comune-Bergamo-Serie-storica-cognomi-pi-diffusi/4pqu-7zkd>
+title: Serie storica cognomi più diffusi
+description: Serie storica dal 1987 dei cognomi più diffusi (numerosità superiore a 10 occorrenze) tra i residenti del Comune di Bergamo suddivisi per cittadinanza.
+author: Comune di Bergamo
+period: 1987-2015
+
+## surnames_firenze.csv
+link: <http://opendata.comune.fi.it/statistica_territorio/dataset_0164.html>
+title: Cognomi residenti
+description: Il dataset contiene la classifica dei cognomi più diffusi nel Comune di Firenze .
+author: Comune di Firenze
+period: 2013
+
+## surnames_matera.csv
+link: <http://dati.regione.basilicata.it/catalog/dataset/cognomi-di-tutti-i-residenti-della-citta-di-matera-aggiornati-al-31-12-2014>
+title: Cognomi di tutti i residenti della città di Matera aggiornati al 31.12.2014
+description: Il dataset contiene i cognomi di tutti i residenti nel comune di Matera. Nella seconda colonna é indicato il numero totale di residenti che hanno il relativo cognome. La situazione é aggiornata al 31 Dicembre 2014.
+author: Comune di Matera
+period: 2014

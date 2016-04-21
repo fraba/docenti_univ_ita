@@ -59,6 +59,8 @@ source("06a_hh_fixline_decline_prediction.R")
 surname_per_region$perc_hh_wt_fixline <- 
   surname_per_region$perc_hh_wt_fixline * hh_perc_correction
 
+save(surname_per_region, file = "surname_per_region_processed.RData")
+
 surname_per_region <- data.table(surname_per_region)
 setkeyv(surname_per_region, keycols)
 

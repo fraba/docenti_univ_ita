@@ -10,11 +10,11 @@
 library(shiny)
 library(leaflet)
 library(RColorBrewer)
-library(htmltools)
 
 # Define UI for application that draws a histogram
 ui <- 
   shinyUI(navbarPage("",
+                     tags$head(tags$base(target = "_blank")),
                      tabPanel("Regions",
                               leafletOutput("region_map")),
                      tabPanel("Universities",
