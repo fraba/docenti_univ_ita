@@ -38,8 +38,8 @@ docenti_by_year <-
   dplyr::summarize(docenti = n())
 ggplot(docenti_by_year, aes(x=anno, y=docenti)) + geom_line()
 
-dbWriteTable(con, value = as.data.frame(docenti_by_year), 
-             name = "count_docenti_by_year", append = TRUE, row.names=0)
+# dbWriteTable(con, value = as.data.frame(docenti_by_year), 
+#              name = "count_docenti_by_year", append = TRUE, row.names=0)
 save(docenti_by_year, file = "count/docenti_by_year.RData")
 
 docenti_by_year_region <-
@@ -47,8 +47,8 @@ docenti_by_year_region <-
   dplyr::group_by(anno, nome_regione, regione_id) %>%
   dplyr::summarize(docenti = n())
 
-dbWriteTable(con, value = as.data.frame(docenti_by_year_region), 
-             name = "count_docenti_by_year_region", append = TRUE, row.names=0)
+# dbWriteTable(con, value = as.data.frame(docenti_by_year_region), 
+#              name = "count_docenti_by_year_region", append = TRUE, row.names=0)
 save(docenti_by_year_region, file = "count/docenti_by_year_region.RData")
 
 docenti_by_year_ateneo <-
@@ -56,8 +56,8 @@ docenti_by_year_ateneo <-
   dplyr::group_by(anno, wikidata_label, ateneo_id) %>%
   dplyr::summarize(docenti = n())
 
-dbWriteTable(con, value = as.data.frame(docenti_by_year_ateneo), 
-             name = "count_docenti_by_year_ateneo", append = TRUE, row.names=0)
+# dbWriteTable(con, value = as.data.frame(docenti_by_year_ateneo), 
+#              name = "count_docenti_by_year_ateneo", append = TRUE, row.names=0)
 save(docenti_by_year_ateneo, file = "count/docenti_by_year_ateneo.RData")
 
 docenti_by_year_facolta <-
@@ -66,8 +66,8 @@ docenti_by_year_facolta <-
   dplyr::summarize(docenti = n())
 docenti_by_year_facolta <- docenti_by_year_facolta[docenti_by_year_facolta$facolta !="" ,]
 
-dbWriteTable(con, value = as.data.frame(docenti_by_year_facolta), 
-             name = "count_docenti_by_year_facolta", append = TRUE, row.names=0)
+# dbWriteTable(con, value = as.data.frame(docenti_by_year_facolta), 
+#              name = "count_docenti_by_year_facolta", append = TRUE, row.names=0)
 save(docenti_by_year_facolta, file = "count/docenti_by_year_facolta.RData")
 
 docenti_by_year_dipartimento <-
@@ -77,8 +77,8 @@ docenti_by_year_dipartimento <-
 docenti_by_year_dipartimento <- 
   docenti_by_year_dipartimento[docenti_by_year_dipartimento$dipartimento!="Dip. Non disponibile",]
 
-dbWriteTable(con, value = as.data.frame(docenti_by_year_dipartimento), 
-             name = "count_docenti_by_year_dipartimento", append = TRUE, row.names=0)
+# dbWriteTable(con, value = as.data.frame(docenti_by_year_dipartimento), 
+#              name = "count_docenti_by_year_dipartimento", append = TRUE, row.names=0)
 save(docenti_by_year_dipartimento, file = "count/docenti_by_year_dipartimento.RData")
 
 # Summary for simulation

@@ -9,6 +9,7 @@ load("count/surname_by_facolta.RData")
 load("count/surname_by_dipartimento.RData")
 
 surname_by_region <- data.table(surname_by_region)
+surname_by_ateneo <- data.table(surname_by_ateneo)
 surname_by_facolta <- data.table(surname_by_facolta)
 surname_by_dipartimento <- data.table(surname_by_dipartimento)
 
@@ -67,10 +68,39 @@ setkeyv(surname_per_region, keycols)
 surname_per_region <- 
   surname_per_region[,.(regione_id, cognome, hh_wt_surname, hh_mean_size, perc_hh_wt_fixline)]
 
-surname_by_region <- merge(surname_by_region, surname_per_region)
-surname_by_ateneo <- merge(surname_by_ateneo, surname_per_region)
-surname_by_facolta <- merge(surname_by_facolta, surname_per_region)
-surname_by_dipartimento <- merge(surname_by_dipartimento, surname_per_region)
+surname_by_region <- merge(surname_by_region, surname_per_region, all.x = TRUE)
+surname_by_ateneo <- merge(surname_by_ateneo, surname_per_region, all.x = TRUE)
+surname_by_facolta <- merge(surname_by_facolta, surname_per_region, all.x = TRUE)
+surname_by_dipartimento <- merge(surname_by_dipartimento, surname_per_region, all.x = TRUE)
+
+
+# Replace NAs
+surname_by_region$hh_wt_surname[is.na(surname_by_region$hh_wt_surname)] <- 0
+surname_by_ateneo$hh_wt_surname[is.na(surname_by_ateneo$hh_wt_surname)] <- 0
+surname_by_facolta$hh_wt_surname[is.na(surname_by_facolta$hh_wt_surname)] <- 0
+surname_by_dipartimento$hh_wt_surname[is.na(surname_by_dipartimento$hh_wt_surname)] <- 0
+
+require(dplyr)
+surname_by_region <-
+  surname_by_region %>%
+  group_by(regione_id) %>%
+  dplyr::mutate(hh_mean_size = min(hh_mean_size, na.rm=T),
+                perc_hh_wt_fixline = min(perc_hh_wt_fixline, na.rm=T))
+surname_by_ateneo <-
+  surname_by_ateneo %>%
+  group_by(regione_id) %>%
+  dplyr::mutate(hh_mean_size = min(hh_mean_size, na.rm=T),
+                perc_hh_wt_fixline = min(perc_hh_wt_fixline, na.rm=T))
+surname_by_facolta <-
+  surname_by_facolta %>%
+  group_by(regione_id) %>%
+  dplyr::mutate(hh_mean_size = min(hh_mean_size, na.rm=T),
+                perc_hh_wt_fixline = min(perc_hh_wt_fixline, na.rm=T))
+surname_by_dipartimento <-
+  surname_by_dipartimento %>%
+  group_by(regione_id) %>%
+  dplyr::mutate(hh_mean_size = min(hh_mean_size, na.rm=T),
+                perc_hh_wt_fixline = min(perc_hh_wt_fixline, na.rm=T))
 
 # Simulation
 surname_by_list <- 
@@ -121,11 +151,11 @@ simulation_long_df <-
 
 simulation_long_df$sim_id <- 1:nrow(simulation_long_df)
 
-source('00_connect_to_db.R') # not in repo
-
-dbWriteTable(con, value = simulation_long_df, 
-             name = "simulation_long_df", append = TRUE, row.names=0)
-
-dbDisconnect(con)
+# source('00_connect_to_db.R') # not in repo
+# 
+# dbWriteTable(con, value = simulation_long_df, 
+#              name = "simulation_long_df", append = TRUE, row.names=0)
+# 
+# dbDisconnect(con)
 
 save(simulation_long_df, file = "sim/simulation_df.RData")

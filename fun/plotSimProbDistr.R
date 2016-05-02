@@ -24,8 +24,8 @@ plotSimProbDistr <- function(sim, n_in_unitpop, surname, qRight = .8)  {
               aes(x=x,y=y), fill = 'red') +
     geom_point(data = observed_df, 
                aes(x=x, y=y)) +
-    geom_text(data = observed_df, 
-              aes(x=x, y=y, label=label), hjust=0, vjust=-1) +
+    geom_label(data = observed_df, 
+              aes(x=x, y=y, label=label, hjust=0.5, vjust=0.5), alpha = 0.6) +
     theme(axis.text.y = element_blank(), axis.ticks.y = element_blank(),
           panel.background = element_blank(),
           panel.grid.major = element_line(colour = "gainsboro")) +

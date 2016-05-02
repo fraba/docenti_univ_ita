@@ -9,9 +9,17 @@ runSimulation <- function(hh_mean_size,
                           unit = NULL, unit_level = NULL, region = NULL, year = NULL,
                           return_df = FALSE,
                           loops = 10000) {
+  if (is.na(hh_wt_surname)) {
+    hh_wt_surname <- 0
+    hh_mean_size <- 0
+    perc_hh_wt_fixline <- 0
+  }
   n_in_largepop <- hh_mean_size * hh_wt_surname
   n_in_univ <- docenti_wt_surname
   p <- n_in_largepop / (largepop * perc_hh_wt_fixline)
+  if (is.na(p)) {
+    p <- 0.00001
+    }
   expected_in_univ <- p * unitpop
   
   sim <- data.frame(result=rbinom(loops, size = unitpop, prob = p))

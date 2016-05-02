@@ -16,12 +16,16 @@ ui <- shinyUI(fluidPage(
     leafletOutput("surname_dist", height = 600)
   ),
   sidebarPanel(
-    textInput("surnameinput", label = "Search a surname", value = "ROSSI")
+    selectizeInput("surnameinput", label = "Search a surname",
+                   choices = NULL,
+                   options = list(create = TRUE)),
+    textOutput("totsurname"),
+    textOutput("tothh")
   )
 )
 )
 
-server <- shinyServer(function(input, output) {
+server <- shinyServer(function(input, output, session) {
   
   # Data prep
   
@@ -68,7 +72,15 @@ server <- shinyServer(function(input, output) {
     x <- gsub("ì|í", "i'", x)
     return(toupper(x))
   }
-    
+  
+  updateSelectizeInput(session, 'surnameinput', 
+                       choices = accentLastLetter(unique(surname_per_region$cognome)[order(unique(surname_per_region$cognome))]),
+                       selected = 'ROSSI', server = TRUE)  
+  
+  output$totsurname <- renderText({paste("Surnames: ", 
+                                         format(length(unique(surname_per_region$cognome)), big.mark = ","))})
+  output$tothh <- renderText({paste("Households: ", 
+                                    format(sum(surname_per_region$hh_wt_surname), big.mark = ","))})
   
   output$surname_dist <- renderLeaflet({
     
@@ -101,7 +113,7 @@ server <- shinyServer(function(input, output) {
     
     leaflet(spatial_df) %>%
       setView(lng = 12.5674, lat = 42, zoom = 5.8) %>%
-      addPolygons(stroke = FALSE, , smoothFactor = 0.2, fillOpacity = 1,
+      addPolygons(stroke = TRUE,  color = 'black', weight = 2, smoothFactor = 0.2, fillOpacity = 1,
                   fillColor = ~pal(pop_wt_surname_perc),
                   popup = ~paste0("<b>",NOME, ": ", round(pop_wt_surname_perc,digits=3),"%</b><br>Population: ", 
                                   format_num(popolazione), "<br>",

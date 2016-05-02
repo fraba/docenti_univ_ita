@@ -53,28 +53,39 @@ accentLastLetter <- function(x) {
   return(x)
 }
 
+replaceSpace <- function(x) {
+  x <- gsub(" ", "%20", x)
+  return(x)
+}
+
 for (s in surnames_to_scrape[!(surnames_to_scrape %in% surname_per_region$surname)]) {
   print(accentLastLetter(s))
   
   res <- NULL;
   res <- tryCatch({
-    res <- withTimeout({
+    withTimeout({
       print("Requesting webpage...")
-      html <- read_html(paste0(base_url, accentLastLetter(s)))
-    }, timeout=30);
+      read_html(paste0(base_url, replaceSpace(accentLastLetter(s))))
+    }, timeout=30)
   }, TimeoutException=function(ex) {
     cat("Server is taking to long. Moving to next surname in a while...")
-    Sys.sleep(60 * 15)
-    return('timeout')
+    return(NA)
   })
   
-  if(res == 'timeout') next
-   
+  if (length(res) < 2 | is.null(res)) {
+    Sys.sleep(sample(30:60, 1))
+    next
+    }
+  
   results <- 
-    html %>%
+    res %>%
     html_nodes(xpath = "//*[@id='container']/div[5]/div/div/div[1]/div[3]/div[2]/ul") %>%
     html_text()
-  if (length(results) == 0) next
+  if (length(results) == 0) {
+    print(paste0("Nothing parsed from the page with surname ", s, "..."))
+    Sys.sleep(sample(30:60, 1))
+    next
+  }
   results <- gsub("\n\\s+", ";", results)
   results <- gsub("^;|;$", "", results)
   results <- strsplit(results, ";")[[1]]
