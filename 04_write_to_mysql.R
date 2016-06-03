@@ -22,6 +22,10 @@ nrow(data_store$data)
 
 # Important cleaning !!!
 data_store$data$Ateneo <- gsub("\xe0", "à", data_store$data$Ateneo)
+data_store$data$`Cognome e Nome` <- 
+  tmp_fac <- gsub("[^[:print:]]", "%%%", data_store$data$`Cognome e Nome`)
+data_store$data$`Cognome e Nome` <-
+  gsub("IACOVITTI An%%%elita", "IACOVITTI Angelita", data_store$data$`Cognome e Nome`)
 
 ## Process surnames
 
@@ -71,7 +75,6 @@ atenei <- rbind.fill(atenei,
 
 
 # TABLE: ateneo_mysql_table
-
 ateneo_mysql_table <- 
   data.frame(wikidata_id = atenei$ateneo_wikidata_id,
              wikidata_label = NA,
@@ -155,7 +158,7 @@ for (i in 1:nrow(regione_mysql_table)) {
 }
 
 ## Write table (in this order)
-dbWriteTable(con, value = regione_mysql_table, name = "regione_wt_coord", append = TRUE, row.names=0) 
+dbWriteTable(con, value = regione_mysql_table, name = "regione", append = TRUE, row.names=0) 
 dbWriteTable(con, value = ateneo_mysql_table, name = "ateneo", append = TRUE, row.names=0) 
 
 save(regione_mysql_table, file = 'regione_mysql_table.RData')
@@ -186,14 +189,107 @@ names(keyvalue) <- atenei$ateneo_name_cineca
 docente_ruolo_mysql_table$ateneo_id <- keyvalue[docente_ruolo_mysql_table$ateneo]
 docente_ruolo_mysql_table$ateneo <- NULL
 
-list_of_df_chunks <- split(docente_ruolo_mysql_table, 
-                           (seq(nrow(docente_ruolo_mysql_table))-1) %/% 50000)
+require(stringr)
+require(stringi)
 
-for (df in list_of_df_chunks) {
-  dbWriteTable(con, value = df, name = "docente_ruolo", append = TRUE, row.names=0)
+# Text Cleaning
+simpleCap <- function(x) {
+  # http://stackoverflow.com/a/6364905/1707938
+  s <- strsplit(tolower(x), " ")[[1]]
+  paste(toupper(substring(s, 1, 1)), substring(s, 2),
+        sep="", collapse=" ")
+}
+keepLow <- c("\\be\\b","\\bper\\b","\\bdi\\b", "\\bd'", "\\bdell'", 
+             "\\bdella\\b", "\\bdei\\b", "\\bdelle\\b", "\\bdel\\b",
+             "\\bed\\b", "\\bl'", "\\bla\\b", "\\bil\\b", "\\ble\\b",
+             "\\bin\\b") 
+
+## Clean Faculty
+tmp_fac <- docente_ruolo_mysql_table$facolta
+Encoding(tmp_fac) <- "UTF-8"
+tmp_fac <- gsub(" \\(\\*\\)", "", tmp_fac)
+
+tmp_fac <- gsub("[^[:print:]]", "%%%", tmp_fac)
+
+tmp_fac <- gsub("Giorgio Fu%%%", "Giorgio Fuà", tmp_fac)
+tmp_fac <- gsub("Forl%%%", "Forlì", tmp_fac)
+tmp_fac <- gsub("Societ%%%", "Società", tmp_fac)
+
+tmp_fac <- gsub("\\.", ". ", tmp_fac)
+
+tmp_fac <- gsub("\\s+"," ", tmp_fac)
+tmp_fac <- str_trim(tmp_fac)
+
+tmp_fac <- sapply(tmp_fac, simpleCap, USE.NAMES = FALSE)
+for(word in keepLow) {
+  tmp_fac <- gsub(word, gsub('\\\\b','',word), tmp_fac, ignore.case = T) 
 }
 
-save(docente_ruolo_mysql_table, file = 'docente_ruolo_mysql_table.RData')
+tmp_fac <- gsub("\\bIi\\b", "II", tmp_fac)
+tmp_fac <- gsub("\\bIii\\b", "III", tmp_fac)
+tmp_fac <- gsub("\\bIv\\b", "IV", tmp_fac)
+tmp_fac <- gsub("\\bVi\\b", "VI", tmp_fac)
+tmp_fac <- gsub("\\bVii\\b", "VII", tmp_fac)
+
+tmp_fac <- gsub("\"([a-z])", "\"\\U\\1", tmp_fac, perl=TRUE)
+tmp_fac <- gsub("\\(([a-z])", "\\(\\U\\1", tmp_fac, perl=TRUE)
+tmp_fac <- gsub("'([a-z])", "'\\U\\1", tmp_fac, perl=TRUE)
+
+docente_ruolo_mysql_table$facolta <- tmp_fac
+
+## Clean Department
+tmp_dep <- docente_ruolo_mysql_table$dipartimento
+Encoding(tmp_dep) <- "UTF-8"
+tmp_dep <- gsub(" \\(\\*\\)", "", tmp_dep)
+tmp_dep <- gsub("[^[:print:]]", "%%%", tmp_dep)
+
+tmp_dep <- gsub("MULTIMEDIALIT%%%", "MULTIMEDIALITÀ", tmp_dep)
+
+tmp_dep <- gsub("dell%%%", "dell'", tmp_dep, ignore.case = T)
+
+tmp_dep <- gsub("d%%%", "d'", tmp_dep, ignore.case = T)
+
+tmp_dep <- gsub("societ%%%", " società", tmp_dep, ignore.case=T)
+tmp_dep <- gsub("societa%%%", " società", tmp_dep, ignore.case=T)
+
+tmp_dep <- gsub("attivit%%%", " attività", tmp_dep, ignore.case = T)
+tmp_dep <- gsub("attivita%%%", " attività", tmp_dep, ignore.case = T)
+
+tmp_dep <- gsub("antichit%%%", " antichità", tmp_dep, ignore.case = T)
+
+tmp_dep <- gsub("facolt%%%", " facoltà", tmp_dep, ignore.case = T)
+
+tmp_dep <- gsub("sanit%%%", " sanità", tmp_dep, ignore.case = T)
+tmp_dep <- gsub("sanita'", " sanità", tmp_dep, ignore.case = T)
+tmp_dep <- gsub("sanit'", " sanità", tmp_dep, ignore.case = T)
+
+tmp_dep <- gsub("Civilt%%%", " Civiltà", tmp_dep, ignore.case = T)
+
+tmp_dep <- gsub("%%%", "", tmp_dep)
+
+tmp_dep <- gsub("\\.", ". ", tmp_dep)
+tmp_dep <- gsub(",", ", ", tmp_dep)
+
+tmp_dep <- gsub("\\( ", "(", tmp_dep)
+tmp_dep <- gsub("\\s+"," ", tmp_dep)
+tmp_dep <- str_trim(tmp_dep)
+
+tmp_dep <- sapply(tmp_dep, simpleCap, USE.NAMES = FALSE)
+for(word in keepLow) {
+  tmp_dep <- gsub(word, gsub('\\\\b','',word), tmp_dep, ignore.case = T) 
+}
+
+tmp_dep <- gsub("\\bIi\\b", "II", tmp_dep)
+tmp_dep <- gsub("\\bIii\\b", "III", tmp_dep)
+tmp_dep <- gsub("\\bIv\\b", "IV", tmp_dep)
+tmp_dep <- gsub("\\bVi\\b", "VI", tmp_dep)
+tmp_dep <- gsub("\\bVii\\b", "VII", tmp_dep)
+
+tmp_dep <- gsub("\"([a-z])", "\"\\U\\1", tmp_dep, perl=TRUE)
+tmp_dep <- gsub("\\(([a-z])", "\\(\\U\\1", tmp_dep, perl=TRUE)
+tmp_dep <- gsub("'([a-z])", "'\\U\\1", tmp_dep, perl=TRUE)
+
+docente_ruolo_mysql_table$dipartimento <- tmp_dep
 
 # TABLE: join_cinceca_wd
 
@@ -222,8 +318,15 @@ faculty_wt_coordinates <- faculty_wt_coordinates[facolta!="",]
 setkeyv(faculty_wt_coordinates, c("facolta","ateneo_id"))
 faculty_wt_coordinates <- unique(faculty_wt_coordinates)
 
+# Add unique id
+faculty_wt_coordinates$facolta_id <- paste0("fac:", 1:nrow(faculty_wt_coordinates))
+
+Encoding(faculty_wt_coordinates$facolta) <- 'UTF-8' 
+
 dbWriteTable(con, value = faculty_wt_coordinates, 
              name = "faculty_wt_coordinates", append = TRUE, row.names=0)
+
+save(faculty_wt_coordinates, file = 'faculty_wt_coordinates.RData')
 
 # TABLE: department_wt_coordinates
 require(data.table)
@@ -234,7 +337,44 @@ department_wt_coordinates <- department_wt_coordinates[dipartimento!="Dip. Non d
 setkeyv(department_wt_coordinates, c("dipartimento","ateneo_id"))
 department_wt_coordinates <- unique(department_wt_coordinates)
 
+# Add unique id
+department_wt_coordinates$dipartimento_id <- 
+  paste0("dep:", 1:nrow(department_wt_coordinates))
+
+Encoding(department_wt_coordinates$dipartimento) <- 'UTF-8'
+
 dbWriteTable(con, value = department_wt_coordinates, 
              name = "department_wt_coordinates", append = TRUE, row.names=0)
+
+save(department_wt_coordinates, file = 'department_wt_coordinates.RData')
+
+## ADD primary key to faculty and department
+Encoding(docente_ruolo_mysql_table$facolta) <- 'UTF-8'
+
+setkeyv(docente_ruolo_mysql_table, c('ateneo_id', 'facolta'))
+setkeyv(faculty_wt_coordinates, c('ateneo_id', 'facolta'))
+docente_ruolo_mysql_table <-
+  merge(docente_ruolo_mysql_table, 
+        faculty_wt_coordinates[,.(ateneo_id, facolta, facolta_id)],
+        all.x = TRUE)
+
+Encoding(docente_ruolo_mysql_table$dipartimento) <- 'UTF-8'
+Encoding(docente_ruolo_mysql_table$ateneo_id) <- 'UTF-8'
+setkeyv(docente_ruolo_mysql_table, c('ateneo_id', 'dipartimento'))
+setkeyv(department_wt_coordinates, c('ateneo_id', 'dipartimento'))
+docente_ruolo_mysql_table <-
+  merge(docente_ruolo_mysql_table, 
+        department_wt_coordinates[,.(ateneo_id, dipartimento, dipartimento_id)],
+        all.x = TRUE)
+
+# THis is not strictly necessary, table not requested by app 
+# list_of_df_chunks <- split(docente_ruolo_mysql_table, 
+#                            (seq(nrow(docente_ruolo_mysql_table))-1) %/% 50000)
+# 
+# for (df in list_of_df_chunks) {
+#   dbWriteTable(con, value = df, name = "docente_ruolo", append = TRUE, row.names=0)
+# }
+
+save(docente_ruolo_mysql_table, file = 'docente_ruolo_mysql_table.RData')
 
 dbDisconnect(con)

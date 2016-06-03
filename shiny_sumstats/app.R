@@ -1,3 +1,7 @@
+# MAIN APP
+
+url_unit_app <- 'http://127.0.0.1:7359/'
+
 library(shiny)
 library(leaflet)
 require(sp)
@@ -8,25 +12,12 @@ require(scales)
 require(ggplot2)
 require(ggrepel)
 
-# Define UI for application that draws a histogram
 ui <- shinyUI(fluidPage(
   
-  shinyUI(navbarPage("Results",
-                     tabPanel("Time analysis",
-                              column(4,
-                                     selectInput("Time.level", label = "Select 'region' or 'university'",
-                                                 choices = setNames(c("regione", "ateneo"),
-                                                                    c("Region", "University"))),
-                                     uiOutput('Time.unit')
-                              ),
-                              column(8,
-                                     plotOutput("Time.plot"))),
-                     tabPanel("Geo analysis",
+  shinyUI(navbarPage("Surnames in Italian universities",
+                     tabPanel("Data",
                               column(6,
-                                     plotOutput("Geo.plot.university")),
-                              column(6,
-                                     plotOutput("Geo.plot.faculty"),
-                                     plotOutput("Geo.plot.department"))),
+                                     includeHTML("intro.html"))),
                      tabPanel("Region",
                               column(4,
                                      selectInput(
@@ -68,8 +59,30 @@ ui <- shinyUI(fluidPage(
                                        "Department.year", label = NULL,
                                        choices = 2016:2000, selected = 2016)),
                               column(8,
-                                     dataTableOutput('Department.table'))
-                     )))
+                                     dataTableOutput('Department.table'))),
+                     tabPanel("Time analysis",
+                              column(4,
+                                     selectInput("Time.level", label = "Select 'region' or 'university'",
+                                                 choices = setNames(c("regione", "ateneo"),
+                                                                    c("Region", "University"))),
+                                     uiOutput('Time.unit')
+                              ),
+                              column(8,
+                                     plotOutput("Time.plot"))),
+                     tabPanel("Geo analysis",
+                              column(6,
+                                     plotOutput("Geo.plot.university"),
+                                     plotOutput("Geo.plot.faculty"),
+                                     plotOutput("Geo.plot.department"))))),
+  fluidRow(tags$div(id='footer',
+                    style='font-size: 70%; text-align: center; width: 90%; padding: 10px;',
+                    HTML(paste0(
+                      "<p>Data: <a href='http://cercauniversita.cineca.it/' target='_blank'>CINECA</a> and <a href='http://www.paginebianche.it/contacognome' target='_blank'>Pagine Bianche</a> 2016 ",
+                      "| Design: Fracesco Bailo (<a href='https://twitter.com/FrBailo' target='_blank'>@FrBailo</a>) ",
+                      "| Code: <a href='https://github.com/fraba/docenti_univ_ita/tree/master/shiny_unitpage' target='_blank'>GitHub</a> ",
+                      "| Powered by: <a href='http://www.R-project.org/' target='_blank'>R</a> and <a href='http://shiny.rstudio.com/' target='_blank'>Shiny</a> ",
+                      "| R packages: <a href='https://CRAN.R-project.org/package=DT' target='_blank'>DT</a>, <a href='https://CRAN.R-project.org/package=leaflet' target='_blank'>leaflet</a>, <a href='https://CRAN.R-project.org/package=shinyjs' target='_blank'>shinyjs</a>, <a href='http://ggplot2.org' target='_blank'>ggplot2</a>, <a href='scales' target='_blank'>scales</a>, <a href='https://CRAN.R-project.org/package=viridis'>viridis</a> ",
+                      "| Version: 0.9 "))))
   
 ))
 
@@ -133,7 +146,8 @@ server <- shinyServer(function(input, output, session) {
                   popup = ~paste0("<b>",NOME, addConditionalText(unitlevel),": ", round(ratio*100, digits=1),"%</b><br>Staff",
                                   addConditionalText(unitlevel),": ",
                                   format_num(n), "<br>",
-                                  "with suspect family relations",addConditionalText(unitlevel),": ",  format_num(suspect_n))) %>%
+                                  "with suspect family relations",addConditionalText(unitlevel),": ",  format_num(suspect_n), "<br>",
+                                  "<a href='",url_unit_app,"?unit_year=",yr,"&unit_level=region&unit_id=",wid,"'  target='_blank'>See data</a>")) %>%
       addLegend("topright", pal = pal, values = ~(ratio*100),
                 title = "With suspect relations",
                 opacity = 1,
@@ -198,7 +212,9 @@ server <- shinyServer(function(input, output, session) {
                        popup = ~paste0("<b>", wikidata_label, addConditionalText(unitlevel),": ", round(ratio*100, digits=1),"%</b><br>Staff",
                                        addConditionalText(unitlevel),": ",
                                        format_num(n), "<br>",
-                                       "with suspect family relations",addConditionalText(unitlevel),": ",  format_num(suspect_n))) %>%
+                                       "with suspect family relations",addConditionalText(unitlevel),": ",  format_num(suspect_n), "<br>",
+                                       "<a href='",url_unit_app,"?unit_year=",yr,"&unit_level=ateneo&unit_id=",ateneo,"'  target='_blank'>See data</a>"
+                                       )) %>%
       addLegend("topright", pal = pal, values = ~(ratio*100),
                 title = "With suspect relations",
                 opacity = 1,
@@ -214,11 +230,11 @@ server <- shinyServer(function(input, output, session) {
     tbl$ratio[is.na(tbl$ratio)] <- 0
     tbl$suspect_n[is.na(tbl$suspect_n)] <- 0
     
-    tbl <- tbl[,c("unit","wikidata_label","n","suspect_n","ratio")]
+    tbl <- tbl[,c("unit","facolta","wikidata_label","n","suspect_n","ratio")]
     tbl$suspect_n <- round(tbl$suspect_n,0)
     tbl$n <- round(tbl$n,0)
     tbl$ratio <- round(tbl$ratio*100,1)
-    names(tbl) <- c("Faculty","University", "Staff", "with suspect relations", "%")
+    names(tbl) <- c("faculta_id","Faculty","University", "Staff", "with suspect relations", "%")
     return(DT::datatable(tbl, rownames = FALSE, extensions = 'Scroller',
                          options = list(order = list(list(4, 'desc')),
                                         pageLength = 20, 
@@ -228,7 +244,8 @@ server <- shinyServer(function(input, output, session) {
                                         scroller = TRUE,
                                         bInfo = TRUE,
                                         bLengthChange = TRUE,
-                                        columnDefs = list(list(className = 'dt-center', targets = 1:3)))))
+                                        columnDefs = list(list(visible=FALSE, targets=0),
+                                                          list(className = 'dt-center', targets = 1:3)))))
   })
   
   output$Department.table <- DT::renderDataTable({
@@ -239,11 +256,11 @@ server <- shinyServer(function(input, output, session) {
     tbl$ratio[is.na(tbl$ratio)] <- 0
     tbl$suspect_n[is.na(tbl$suspect_n)] <- 0
     
-    tbl <- tbl[,c("unit","wikidata_label","n","suspect_n","ratio")]
+    tbl <- tbl[,c("unit","dipartimento","wikidata_label","n","suspect_n","ratio")]
     tbl$suspect_n <- round(tbl$suspect_n,0)
     tbl$n <- round(tbl$n,0)
     tbl$ratio <- round(tbl$ratio*100,1)
-    names(tbl) <- c("Department", "University", "Staff", "with suspect relations", "%")
+    names(tbl) <- c("dipartimento_id","Department", "University", "Staff", "with suspect relations", "%")
     tbl$Department <- iconv(tbl$Department, "utf-8", "ASCII", sub=" ")
     return(DT::datatable(tbl, rownames = FALSE, extensions = 'Scroller',
                          options = list(order = list(list(4, 'desc')),
@@ -254,7 +271,8 @@ server <- shinyServer(function(input, output, session) {
                                         scroller = TRUE,
                                         bInfo = TRUE,
                                         bLengthChange = TRUE,
-                                        columnDefs = list(list(className = 'dt-center', targets = 1:3)))))
+                                        columnDefs = list(list(visible=FALSE, targets=0),
+                                                          list(className = 'dt-center', targets = 1:3)))))
   })
   
   output$Time.unit <- renderUI({
@@ -314,7 +332,7 @@ server <- shinyServer(function(input, output, session) {
   output$Geo.plot.university <- renderPlot({
     ggplot(result_lists$ateneo$ateneo,
            aes(x=ratio,y=lat)) +
-      geom_point() +
+      geom_point(colour = 'red', size = 3, alpha = 0.4) +
       scale_x_continuous(labels = percent) +
       geom_smooth(se=FALSE, method = 'lm', colour = 'black') +
       geom_smooth(se=FALSE) +
@@ -329,7 +347,7 @@ server <- shinyServer(function(input, output, session) {
       dplyr::group_by(ateneo,lat)
     ggplot(tmp_df,
            aes(x=ratio,y=lat)) +
-      geom_point() +
+      geom_point(colour = 'red', size = 3, alpha = 0.4) +
       scale_x_continuous(labels = percent) +
       geom_smooth(se=FALSE, method = 'lm', colour = 'black') +
       geom_smooth(se=FALSE) +
@@ -344,7 +362,7 @@ server <- shinyServer(function(input, output, session) {
       dplyr::group_by(ateneo,lat)
     ggplot(tmp_df,
            aes(x=ratio,y=lat)) +
-      geom_point() +
+      geom_point(colour = 'red', size = 3, alpha = 0.4) +
       scale_x_continuous(labels = percent) +
       geom_smooth(se=FALSE, method = 'lm', colour = 'black') +
       geom_smooth(se=FALSE) +

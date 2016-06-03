@@ -7,18 +7,19 @@ load("count/docenti_by_year_ateneo.RData")
 load("count/docenti_by_year_dipartimento.RData")
 load("count/docenti_by_year_facolta.RData")
 load("ateneo_mysql_table.RData")
-docenti_by_year_ateneo <- merge(docenti_by_year_ateneo, 
+docenti_by_year_region <- data.frame(docenti_by_year_region)
+docenti_by_year_ateneo <- data.frame(merge(docenti_by_year_ateneo, 
                                 ateneo_mysql_table[,c("wikidata_id","regione_id")],
                                 by.x = 'ateneo_id',
-                                by.y = 'wikidata_id')
-docenti_by_year_facolta <- merge(docenti_by_year_facolta, 
+                                by.y = 'wikidata_id'))
+docenti_by_year_facolta <- data.frame(merge(docenti_by_year_facolta, 
                                 ateneo_mysql_table[,c("wikidata_id","regione_id")],
                                 by.x = 'ateneo_id',
-                                by.y = 'wikidata_id')
-docenti_by_year_dipartimento <- merge(docenti_by_year_dipartimento, 
+                                by.y = 'wikidata_id'))
+docenti_by_year_dipartimento <- data.frame(merge(docenti_by_year_dipartimento, 
                                  ateneo_mysql_table[,c("wikidata_id","regione_id")],
                                  by.x = 'ateneo_id',
-                                 by.y = 'wikidata_id')
+                                 by.y = 'wikidata_id'))
 
 simulation_long_df$suspect <- ifelse(simulation_long_df$p_of_observing < 0.05, 
                                      TRUE, FALSE)
@@ -65,9 +66,9 @@ for (a_level in units){
           dplyr::group_by(region, year, ateneo, unit) %>%
           dplyr::summarize(suspect_n = sum(docenti_wt_surname*suspect))
         tmp_df <- merge(tmp_df, 
-                        docenti_by_year_facolta[,c("anno","ateneo_id","docenti","regione_id","facolta")], 
-                        by.x = c("ateneo","region","year","unit"),
-                        by.y = c("ateneo_id","regione_id","anno","facolta"),
+                        docenti_by_year_facolta[,c("anno","ateneo_id","docenti","regione_id", "facolta", "facolta_id")], 
+                        by.x = c("year","unit"),
+                        by.y = c("anno","facolta_id"),
                         all.y = TRUE)
         names(tmp_df)[names(tmp_df) == 'docenti'] <- 'n'
         tmp_df$suspect_n[is.na(tmp_df$suspect_n)] <- 0
@@ -82,9 +83,9 @@ for (a_level in units){
           dplyr::group_by(region, year, ateneo, unit) %>%
           dplyr::summarize(suspect_n = sum(docenti_wt_surname*suspect))
         tmp_df <- merge(tmp_df, 
-                        docenti_by_year_dipartimento[,c("anno","ateneo_id","docenti","regione_id","dipartimento")], 
-                        by.x = c("ateneo","region","year","unit"),
-                        by.y = c("ateneo_id","regione_id","anno","dipartimento"),
+                        docenti_by_year_dipartimento[,c("anno","ateneo_id","docenti","regione_id", "dipartimento_id", "dipartimento")], 
+                        by.x = c("year","unit"),
+                        by.y = c("anno","dipartimento_id"),
                         all.y = TRUE)
         names(tmp_df)[names(tmp_df) == 'docenti'] <- 'n'
         tmp_df$suspect_n[is.na(tmp_df$suspect_n)] <- 0
@@ -122,9 +123,9 @@ for (a_level in units){
           dplyr::group_by(region, year, ateneo, unit) %>%
           dplyr::summarize(suspect_n = sum(docenti_wt_surname*suspect))
         tmp_df <- merge(tmp_df, 
-                        docenti_by_year_dipartimento[,c("anno","ateneo_id","dipartimento","docenti","regione_id")], 
-                        by.x = c("ateneo","region","year","unit"),
-                        by.y = c("ateneo_id","regione_id","anno","dipartimento"),
+                        docenti_by_year_dipartimento[,c("anno","ateneo_id","dipartimento","docenti","regione_id","dipartimento_id")], 
+                        by.x = c("year","unit"),
+                        by.y = c("anno","dipartimento_id"),
                         all.y = TRUE)
         names(tmp_df)[names(tmp_df) == 'docenti'] <- 'n'
         tmp_df$suspect_n[is.na(tmp_df$suspect_n)] <- 0
@@ -144,9 +145,9 @@ for (a_level in units){
           dplyr::group_by(region, year, ateneo, unit) %>%
           dplyr::summarize(suspect_n = sum(docenti_wt_surname*suspect))
         tmp_df <- merge(tmp_df, 
-                        docenti_by_year_facolta[,c("anno","ateneo_id","facolta","docenti","regione_id")], 
-                        by.x = c("ateneo","region","year","unit"),
-                        by.y = c("ateneo_id","regione_id","anno","facolta"),
+                        docenti_by_year_facolta[,c("anno","ateneo_id","facolta","docenti","regione_id", "facolta_id")], 
+                        by.x = c("year","unit"),
+                        by.y = c("anno","facolta_id"),
                         all.y = TRUE)
         names(tmp_df)[names(tmp_df) == 'docenti'] <- 'n'
         tmp_df$suspect_n[is.na(tmp_df$suspect_n)] <- 0
@@ -172,9 +173,9 @@ for (a_level in units){
       dplyr::group_by(region, year, ateneo, unit) %>%
       dplyr::summarize(suspect_n = sum(docenti_wt_surname*suspect))
     tmp_df <- merge(tmp_df, 
-                    docenti_by_year_facolta[,c("anno","ateneo_id","facolta","docenti","regione_id")], 
-                    by.x = c("ateneo","region","year","unit"),
-                    by.y = c("ateneo_id","regione_id","anno","facolta"),
+                    docenti_by_year_facolta[,c("anno","ateneo_id","facolta","docenti","regione_id","facolta_id")], 
+                    by.x = c("year","unit"),
+                    by.y = c("anno","facolta_id"),
                     all.y = TRUE)
     names(tmp_df)[names(tmp_df) == 'docenti'] <- 'n'
     tmp_df$suspect_n[is.na(tmp_df$suspect_n)] <- 0
@@ -191,9 +192,9 @@ for (a_level in units){
       dplyr::group_by(region, year, ateneo, unit) %>%
       dplyr::summarize(suspect_n = sum(docenti_wt_surname*suspect))
     tmp_df <- merge(tmp_df, 
-                    docenti_by_year_dipartimento[,c("anno","ateneo_id","dipartimento","docenti","regione_id")], 
-                    by.x = c("ateneo","region","year","unit"),
-                    by.y = c("ateneo_id","regione_id","anno","dipartimento"),
+                    docenti_by_year_dipartimento[,c("anno","ateneo_id","dipartimento","docenti","regione_id", "dipartimento_id")], 
+                    by.x = c("year","unit"),
+                    by.y = c("anno","dipartimento_id"),
                     all.y = TRUE)
     names(tmp_df)[names(tmp_df) == 'docenti'] <- 'n'
     tmp_df$suspect_n[is.na(tmp_df$suspect_n)] <- 0

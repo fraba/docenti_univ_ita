@@ -122,8 +122,11 @@ for (unit in names(surname_by_list)) {
   } else if (unit == "ateneo") {
     unit_id <- "ateneo_id"
     ateneo_id_vec <- surname_by_list[[unit]][['ateneo_id']]
-  } else {
-    unit_id <- unit
+  } else if (unit == "dipartimento") {
+    unit_id <- 'dipartimento_id'
+    ateneo_id_vec <- surname_by_list[[unit]][['ateneo_id']]
+  } else if (unit == "facolta") {
+    unit_id <- 'facolta_id'
     ateneo_id_vec <- surname_by_list[[unit]][['ateneo_id']]
   }
   
@@ -151,11 +154,14 @@ simulation_long_df <-
 
 simulation_long_df$sim_id <- 1:nrow(simulation_long_df)
 
-# source('00_connect_to_db.R') # not in repo
-# 
-# dbWriteTable(con, value = simulation_long_df, 
-#              name = "simulation_long_df", append = TRUE, row.names=0)
-# 
-# dbDisconnect(con)
+list_of_df_chunks <- split(simulation_long_df, 
+                           (seq(nrow(simulation_long_df))-1) %/% 50000)
+
+source('00_connect_to_db.R') # not in repo
+
+for (df in list_of_df_chunks) {
+  dbWriteTable(con, value = df, name = "simulation_long_df", append = TRUE, row.names=0)
+}
+dbDisconnect(con)
 
 save(simulation_long_df, file = "sim/simulation_df.RData")

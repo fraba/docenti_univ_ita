@@ -1,0 +1,120 @@
+---
+runtime: shiny
+output: html_document
+---
+
+```{r echo = FALSE, message=FALSE, warning=FALSE}
+require(ggplot2)
+require(scales)
+require(dplyr)
+require(sparkline)
+
+load("~/ownCloud/docenti_univ_ita/docente_ruolo_mysql_table.RData")
+
+staff_by_year <- as.data.frame(table(docente_ruolo_mysql_table$anno))
+
+require(stringi)
+
+staff_by_year_gender <- 
+  docente_ruolo_mysql_table %>%
+  dplyr::group_by(anno, genere) %>%
+  dplyr::summarise(Freq = n())
+
+n_records <- nrow(docente_ruolo_mysql_table)
+
+hh_wt_fixline <- data.frame(year = c(2009, 2010, 2011, 2012, 2013),
+                            hh = c(72.8, 70.7, 68.8, 66.2, 64))
+```
+
+## Data on university staff
+
+Data on teaching staff employed by 96 Italian universities (public and private) is published by [CINECA](http://cercauniversita.cineca.it/), a consortium of Italian universities. Data include `r prettyNum(n_records, big.mark=",")` records and covers the period 2000-2016.
+
+Each record corresponds to a person employed during one year. For each record, we know `name`, `gender` (`r round(sum(docente_ruolo_mysql_table$genere!="") / n_records*100, 2)`% of records), `university` (`r round(sum(docente_ruolo_mysql_table$ateneo_id!="") / n_records*100, 2)`%), `faculty` (`r round(sum(docente_ruolo_mysql_table$facolta_id!="", na.rm=T) / n_records*100, 2)`%), `department` (`r round(sum(docente_ruolo_mysql_table$dipartimento!="Dip. Non Disponibile", na.rm=T) / n_records*100, 2)`%), `grade` (`r round(sum(docente_ruolo_mysql_table$fascia!="", na.rm=T) / n_records*100, 2)`%), `scientific sector` or [SSD](https://it.wikipedia.org/wiki/Settore_scientifico-disciplinare) (`r round(sum(docente_ruolo_mysql_table$ssd!="", na.rm=T) / n_records*100, 2)`%) and competition sector (`r round(sum(docente_ruolo_mysql_table$sc!="", na.rm=T) / n_records*100, 2)`%).
+
+```{r, echo = FALSE, fig.height=3, fig.width=10}
+
+  ggplot(staff_by_year_gender, aes(x=anno, y=Freq)) + 
+  geom_bar(aes(fill = genere), stat="identity") + 
+  labs(x=NULL,y='staff',fill='gender') + theme_bw() + scale_y_continuous(labels = comma) + 
+  theme(legend.position = 'bottom') +
+  scale_x_continuous(breaks=2000:2016)
+  
+```
+
+## Estimating surname distribution in population
+
+To estimate the number of people with the same surname that we should naturally expect to observe in a university, faculty or department, I queried a public register of telephone (landlines) contracts for all surnames that belonged to at least two university employees working in the same region during the same year. The resulting dataset is accessible here: 
+
+```{r, echo=FALSE, eval=TRUE}
+shinyAppDir('/Users/francesco/ownCloud/docenti_univ_ita/shiny_surname_map',   
+            options=list(
+    width="100%", height=700))
+```
+
+According to the Italian National Institute for Statistics (ISTAT) between 2009 and 2013, the penetration of landlines among Italian households has markedly declined `r sparkline(hh_wt_fixline$hh)`. To estimate the number of households with a landline in 2016 I fit a model with the 2009-2013 data and predicted the value for 2016. Based on my prediction, which assumes that the decline in landlines continued linearly since 2013, in 2016 57.45% of Italian households had a landline. I accordingly corrected the last data available on regional level, collected in 2011, based on an estimated average reduction of 16.49% in the number of landlines between 2011 and 2016. 
+
+I obtained the number of people with a given surname $s$ living in region $r$ as following. I assumed that the distribution of surnames among households with a landlines was representative of the distribution among the broader population, and then considered households with a landline an unbiased sample of households living in a region. The percentage of households with a landline in region $r$, $perc\_hh\_wt\_landline_{r}$, was computed by multiplying the percentage for 2013 by 0.83, which is given by $\frac{predicted2016}{observed2011}$, where $predicted2016$ and $observed2011$ are respectively the percentage of households with a landline predicted for 2016 and observed in 2011. For each region $r$, I computed the number of people among households with a landline and a given surname $s$, $n\_in\_sample_{s}$, with $hh\_mean\_size_{r} \times hh_{rs}$, where $hh\_mean\_size_{r}$ is the average size of a household in region $r$ (according to ISTAT) and $hh{rs}$ is the number of landlines contracts in region $r$ signed by a person with surname $s$. $n\_in\_sample_{rs}$ is the number of people in households with landlines with surname $s$ in region $r$ obtained with $hh\_mean\_size_{r} \times hh_{rs}$, where $hh\_mean\_size_{r}$ is the average number components in a household in region $r$ as reported by ISTAT. Finally I obtained the relative frequency $exp\_perc_{rs}$ of surname $s$ in region $r$ with $\frac{n\_in\_sample_{rs}}{population_{r} \times perc\_hh\_wt\_landline_{r}}$, where $population_{r}$ is the total population of region $r$. 
+
+## Distance from expected surname distribution in university staff
+
+After I estimated how many people with surname $s$ I should expect to observe in any fair sample drawn from region $r$ population, $exp\_perc_{rs}$, I compared this to the number of university staff with the same surname $s$ over the total number of university employees observed in the university of region $r$, in each university, in each faculty and in each department. Being $n\_in\_univ_{u}$ the total number of employees at the level of region, university, faculty or department, I run 10,000 simulations in which each item of a random sample of size $n\_in\_univ_{u}$ was drawn from a binomial distribution with probability of success equal to $exp\_perc_{rs}$, that is the number of people with surname $s$ I expect to observe in a fair sample of the population of region $r$, and counted the percentage of simulations in which the number of successes was equal or higher than $exp\_perc_{rs}$.
+
+For example in 2006 the University of Florence had 2323 employees and 3 employees with surname `Rossi`, which is fairly common everywhere in Italy. In Tuscany, Florence's region, I estimated (for 2016) that the probability of a random person being a `Rossi` was 0.00998 (or about 1 person every 1000), which is only slightly lower than the actual proportion observed in the University of Florence in 2006 (0.00129).  
+
+Below I plot the result from 10,000 simulations for the surname `Rossi`. The number of employees with surname `Rossi` are indicated on the horizontal axis while the vertical axis indicates the number of simulation that returned that number of employees with surname `Rossi` in a sample of size equal to the University of Florence. How many simulations returned a given or lower number of employees named Rossi? By default, the plot shows that 80% of simulations returned between 0 and 13 `Rossi` employees, by changing the value, we see that 20% of the simulations returned between 0 and 8 `Rossi` employees. The value of interest is of course what we observe in the employment data from the University of Florence, where 3 `Rossi` were employed in 2006, and how it compares to the simulated data: accordingly 99.9% of the simulations returned a number of `Rossi` equal or higher than 3. That is, according to the simulations the observed employment data for `Rossi` is compatible with a fair selection process. 
+
+```{r, echo=FALSE}
+shinyAppDir('/Users/francesco/ownCloud/docenti_univ_ita/shiny_prob_plot')
+```
+
+
+```{r, echo=FALSE, eval=FALSE}
+load("/Users/francesco/ownCloud/docenti_univ_ita/data_validation/surname_3cities.RData")
+load("/Users/francesco/ownCloud/docenti_univ_ita/surname_per_region_processed.RData")
+
+validation_df <- list()
+validation_df[['Lombardia']] <- 
+  subset(surname_per_region, regione_id == 'wd:Q1210')
+validation_df[['Lombardia']][['largepop']] <- 10006727
+validation_df[['Toscana']] <- 
+  subset(surname_per_region, regione_id == 'wd:Q1273')
+validation_df[['Toscana']][['largepop']] <- 3745983
+validation_df[['Basilicata']] <- 
+  subset(surname_per_region, regione_id == 'wd:Q1452')
+validation_df[['Basilicata']][['largepop']] <- 574251
+for (n in names(validation_df)) {
+  validation_df[[n]][['n_in_largepop']] <- 
+    with(validation_df[[n]], hh_mean_size * hh_wt_surname)
+    validation_df[[n]][['p']] <- 
+      with(validation_df[[n]], n_in_largepop / (largepop * perc_hh_wt_fixline))
+}
+
+for (n in c("Bergamo", "Firenze", "Matera")) {
+  validation_df[[n]] <-
+  data.frame(cognome = surnames_list[[n]][['surname']],
+             pp_wt_surname = surnames_list[[n]][['freq']],
+             stringsAsFactors = FALSE)
+}
+validation_df[['Bergamo']]$largepop <- 119002
+validation_df[['Firenze']]$largepop <- sum(validation_df[['Firenze']]$pp_wt_surname)
+validation_df[['Matera']]$largepop <- sum(validation_df[['Matera']]$pp_wt_surname)
+
+require(stringr)
+for (n in c("Bergamo", "Firenze", "Matera")) {
+  validation_df[[n]]$cognome <- str_trim(as.character(validation_df[[n]]$cognome))
+  validation_df[[n]]$p <- with(validation_df[[n]], pp_wt_surname / largepop)
+}
+
+validation_df[['Basilicata_Matera']] <-
+  merge(validation_df[['Basilicata']][,c("cognome","p")], 
+        validation_df[['Matera']][,c("cognome","p")],
+        by = "cognome")
+
+require(car)
+scatterplot(log(validation_df[['Basilicata_Matera']]$p.x), 
+            log(validation_df[['Basilicata_Matera']]$p.y))
+
+```
+
+
