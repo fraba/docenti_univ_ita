@@ -78,10 +78,11 @@ ui <- shinyUI(fluidPage(
                     style='font-size: 70%; text-align: center; width: 90%; padding: 10px;',
                     HTML(paste0(
                       "<p>Data: <a href='http://cercauniversita.cineca.it/' target='_blank'>CINECA</a> and <a href='http://www.paginebianche.it/contacognome' target='_blank'>Pagine Bianche</a> 2016 ",
-                      "| Design: Fracesco Bailo (<a href='https://twitter.com/FrBailo' target='_blank'>@FrBailo</a>) ",
+                      "| Design: Francesco Bailo (<a href='https://twitter.com/FrBailo' target='_blank'>@FrBailo</a>) ",
                       "| Code: <a href='https://github.com/fraba/docenti_univ_ita/tree/master/shiny_unitpage' target='_blank'>GitHub</a> ",
                       "| Powered by: <a href='http://www.R-project.org/' target='_blank'>R</a> and <a href='http://shiny.rstudio.com/' target='_blank'>Shiny</a> ",
                       "| R packages: <a href='https://CRAN.R-project.org/package=DT' target='_blank'>DT</a>, <a href='https://CRAN.R-project.org/package=leaflet' target='_blank'>leaflet</a>, <a href='https://CRAN.R-project.org/package=shinyjs' target='_blank'>shinyjs</a>, <a href='http://ggplot2.org' target='_blank'>ggplot2</a>, <a href='scales' target='_blank'>scales</a>, <a href='https://CRAN.R-project.org/package=viridis'>viridis</a> ",
+                      "| Hosted by: <a href='https://nectar.org.au/research-cloud/'>Nectar Cloud</a> ",
                       "| Version: 0.9 "))))
   
 ))
@@ -236,7 +237,7 @@ server <- shinyServer(function(input, output, session) {
     tbl$ratio <- round(tbl$ratio*100,1)
     names(tbl) <- c("faculta_id","Faculty","University", "Staff", "with suspect relations", "%")
     return(DT::datatable(tbl, rownames = FALSE, extensions = 'Scroller',
-                         options = list(order = list(list(4, 'desc')),
+                         options = list(order = list(list(5, 'desc')),
                                         pageLength = 20, 
                                         searching = TRUE,
                                         deferRender = TRUE,
@@ -263,7 +264,7 @@ server <- shinyServer(function(input, output, session) {
     names(tbl) <- c("dipartimento_id","Department", "University", "Staff", "with suspect relations", "%")
     tbl$Department <- iconv(tbl$Department, "utf-8", "ASCII", sub=" ")
     return(DT::datatable(tbl, rownames = FALSE, extensions = 'Scroller',
-                         options = list(order = list(list(4, 'desc')),
+                         options = list(order = list(list(5, 'desc')),
                                         pageLength = 20, 
                                         searching = TRUE,
                                         deferRender = TRUE,

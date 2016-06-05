@@ -26,10 +26,11 @@ ui <- shinyUI(fluidPage(
                     style='font-size: 70%; margin: auto; width: 90%; padding: 250px 0px 0px 0px;',
                     HTML(paste0(
                       "<p>Data: <a href='http://www.paginebianche.it/contacognome' target='_blank'>Pagine Bianche</a> 2016 ",
-                      "| Design: Fracesco Bailo (<a href='https://twitter.com/FrBailo' target='_blank'>@FrBailo</a>) ",
+                      "| Design: Francesco Bailo (<a href='https://twitter.com/FrBailo' target='_blank'>@FrBailo</a>) ",
                       "| Code: <a href='https://github.com/fraba/docenti_univ_ita/tree/master/shiny_surname_map' target='_blank'>GitHub</a> ",
                       "| Powered by: <a href='http://www.R-project.org/' target='_blank'>R</a> and <a href='http://shiny.rstudio.com/' target='_blank'>Shiny</a> ",
                       "| R packages: <a href='https://CRAN.R-project.org/package=DT' target='_blank'>DT</a>, <a href='https://CRAN.R-project.org/package=leaflet' target='_blank'>leaflet</a>, <a href='https://CRAN.R-project.org/package=shinyjs' target='_blank'>shinyjs</a>, <a href='http://ggplot2.org' target='_blank'>ggplot2</a>, <a href='scales' target='_blank'>scales</a>, <a href='https://CRAN.R-project.org/package=viridis'>viridis</a> ",
+                      "| Hosted by: <a href='https://nectar.org.au/research-cloud/'>Nectar Cloud</a> ",
                       "| Version: 0.9 "))))
 )
 )
